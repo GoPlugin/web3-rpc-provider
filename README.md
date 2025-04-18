@@ -78,10 +78,12 @@ Fix issues: Find and fix issues in the project.
 Write documentation: Improve and write relevant documentation for the project.
 Write tests: Write and optimize test cases for the project.
 
+
 <br>
 
 ## :memo: License
 This project is under license from MIT. For more details, see [the LICENSE file](LICENSE).
+Huge thanks to the author @DODOEX 
 
 &#xa0;
 

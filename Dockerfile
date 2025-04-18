@@ -18,6 +18,8 @@ ENV CHROME_BIN=/usr/bin/chromium-browser \
 FROM base as deps
 ENV PNPM_HOME="/pnpm" \
     PATH="$PNPM_HOME:$PATH"
+
+RUN npm install -g corepack
 RUN corepack enable
 
 WORKDIR /app

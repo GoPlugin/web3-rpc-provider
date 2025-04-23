@@ -42,6 +42,7 @@ export class ChainList implements Picker {
           endpoints.push({
             chainId: data.props.pageProps.chains[i].chainId,
             url: data.props.pageProps.chains[i].rpc[j].url,
+            apiKey: "",
           });
         }
       }

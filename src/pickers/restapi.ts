@@ -13,12 +13,22 @@ export class RestApi implements Picker {
         if (!response.ok) continue;
         
         const data = await response.json();
-        endpoints.push(...data.map((item: any) => ({
+        console.log("Response data:", data);
+
+        // Check if data is an array, if not, wrap it in an array
+        const dataArray = Array.isArray(data) ? data : [data];
+        
+        // Filter out any null or undefined items
+        const validData = dataArray.filter(item => item && item.chainId && item.url);
+        
+        endpoints.push(...validData.map((item: any) => ({
           chainId: item.chainId,
-          url: item.url
+          url: item.url,
+          apiKey: item.apiKey || "",
         })));
       }
 
+      console.log("Processed endpoints:", endpoints);
       return endpoints;
     } catch (error) {
       console.error("RestAPI picker error:", error);

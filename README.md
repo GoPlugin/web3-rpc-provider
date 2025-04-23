@@ -23,7 +23,7 @@ Web3 RPC Provider offers the apis of get the free endpoint, enabling clients to 
 
 ```bash
 # Run the image
-$ docker run -p 3000:3000 -d goplugin/we3-rpc-provider:latest
+$ docker run -p 3000:3000 -d lokesh2cool/we3-rpc-provider:tag
 ```
 
 ## :bulb: Usage
@@ -80,11 +80,10 @@ Write tests: Write and optimize test cases for the project.
 
 
 <br>
-
 ## :memo: License
 This project is under license from MIT. For more details, see [the LICENSE file](LICENSE).
-Huge thanks to the author @DODOEX 
 
+Huge thanks to the author @DODOEX 
 &#xa0;
 
 <div align="center"><a href="#top">Back to top</a></div>

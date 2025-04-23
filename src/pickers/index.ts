@@ -1,1 +1,2 @@
-export * from './chainlist'
+export { ChainList } from './chainlist';
+export { RestApi as restapi } from './restapi';

@@ -35,17 +35,18 @@ export class ChainList implements Picker {
     }
     const data = JSON.parse(content);
 
-    const fruits: Endpoint[] = [];
+    const endpoints: Endpoint[] = [];
     for (let i = 0; i < data.props.pageProps.chains.length; i++) {
       if (chainIds.includes(data.props.pageProps.chains[i].chainId)) {
         for (let j = 0; j < data.props.pageProps.chains[i].rpc.length; j++) {
-          fruits.push({
+          endpoints.push({
             chainId: data.props.pageProps.chains[i].chainId,
             url: data.props.pageProps.chains[i].rpc[j].url,
           });
         }
       }
     }
-    return fruits;
+    console.log("endpoints::::",endpoints)
+    return endpoints;
   }
 }

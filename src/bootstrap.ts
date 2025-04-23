@@ -3,30 +3,48 @@ import puppeteer, {Browser} from 'puppeteer-core';
 import { PickerClass } from "./common"
 import { Garden } from './garden';
 import * as pickers from './pickers';
+import cors from 'cors';
+import { config } from './config';
 
 async function bootstrap() {
-  const port = 3000;
   const app: Express = express();
   const browser: Browser = await puppeteer.launch({
       headless: true,
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-      args:
-      ['--no-sandbox', '--disabled-setupid-sandbox'],
+      executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+      args: ['--no-sandbox', '--disabled-setupid-sandbox'],
   });
+  
   const map = new Map<string, PickerClass>();
   Object.entries(pickers).forEach(([key, value]) => {
-    map.set(key, value);
-    console.log(`Loaded ${key}.`);
+    // Convert key to lowercase for case-insensitive matching
+    const normalizedKey = key.toLowerCase();
+    map.set(normalizedKey, value);
+    console.log(`Loaded picker - Key: ${normalizedKey}, Value:`, value);
   });
-  const graden = new Garden(browser, map);
+  const garden = new Garden(browser, map);
+
+  app.use(cors({
+    origin: config.urls.frontend,
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Accept'],
+    credentials: true
+  }));
 
   app.get('/endpoints', async (req: Request<unknown, unknown, unknown,{ sources: string[], chains: number[] }>, res: Response) => {
+    res.header('Access-Control-Allow-Origin', config.urls.frontend);
+    res.header('Access-Control-Allow-Credentials', 'true');
+    
     if (!req.query.sources || !req.query.chains) {
       res.send([]);
       return;
     }
-    const result = await graden.collect(req.query.sources, req.query.chains.map(Number))
-    res.send(result);
+    try {
+      const result = await garden.collect(req.query.sources, req.query.chains.map(Number));
+      res.send(result);
+    } catch (error) {
+      console.error('Error collecting endpoints:', error);
+      res.status(500).send({ error: 'Failed to collect endpoints' });
+    }
   });
 
   app.get('/:chain/endpoints', async (req: Request<{ chain: string }, unknown, unknown,{ sources: string[] }>, res: Response) => {
@@ -34,13 +52,15 @@ async function bootstrap() {
       res.send([]);
       return;
     }
-    const result = await graden.collect(req.query.sources, [Number(req.params.chain)])
+    const result = await garden.collect(req.query.sources, [Number(req.params.chain)])
     res.send(result);
   });
 
-  app.listen(port, () => {
-    console.log(`Listening on port ${port}`);
+  app.listen(config.ports.provider, () => {
+    console.log(`Provider service running on port ${config.ports.provider}`);
+    console.log(`Connected to backend at ${config.urls.backend}`);
   });
 }
 
 void bootstrap();
+

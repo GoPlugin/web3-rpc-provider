@@ -37,6 +37,8 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
+    "@types/cors": "^2.8.17",
+    "cors": "^2.8.5",
     "express": "^4.19.2",
     "puppeteer-core": "^23.2.1"
   }

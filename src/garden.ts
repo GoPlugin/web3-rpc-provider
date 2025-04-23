@@ -1,49 +1,50 @@
-import { Browser, Page } from "puppeteer-core";
-import { PickerClass, Endpoint } from "./common";
-import * as utils from './utils';
+import { Browser } from 'puppeteer-core';
+import { PickerClass, Endpoint } from './common';
+import { RestAPI } from './pickers/restapi';
 
 export class Garden {
   constructor(
-    private readonly browser: Browser,
-    private readonly pickers: Map<string, PickerClass>,
-    private readonly options: {maxPages: number} = {maxPages: 5},
+    private browser: Browser,
+    private pickers: Map<string, PickerClass>
   ) {}
 
-  async collect(sources: string[], chainIds: number[]) {
-    if (sources.length <= 0 || chainIds.length <= 0) {
-      return [];
-    }
+  async collect(sources: string[], chains: number[]): Promise<Endpoint[]> {
+    const results: Endpoint[] = [];
 
-    const size = Math.min(sources.length, this.options.maxPages);
-    const pages: Page[] = await Promise.all(utils.times(size, () => this.browser.newPage()));
-    const chunks = utils.chunks(sources, size);
+    for (const source of sources) {
+      const Picker = this.pickers.get(source);
+      if (!Picker) {
+        console.warn(`Unknown source: ${source}`);
+        continue;
+      }
 
-    const result = [];
-    for (let i = 0; i < chunks.length; i++) {
-
-      const _values = await Promise.all(chunks[i].map((source, j): Promise<Endpoint[]> | void => {
-        const Clazz = this.pickers.get(source);
-        if (!Clazz) return;
-        try {
-          const picker = new Clazz(pages[j]);
-          return picker.pick(chainIds);
-        } catch(err: unknown) {
-          if (err instanceof Error) {
-            console.error(`${source} got an error: ${err.name}`);
-            console.error(err);
+      try {
+        let endpoints: Endpoint[] = [];
+        if (source === 'restapi') {
+          // For RestAPI, don't need a browser page
+          const picker = new Picker();
+          endpoints = await picker.pick(chains);
+        } else {
+          // For other pickers that need browser (like Chainlist)
+          const page = await this.browser.newPage();
+          try {
+            const picker = new Picker(page);
+            endpoints = await picker.pick(chains);
+          } finally {
+            await page.close();
           }
-          return;
         }
-      }));
-
-      const values = utils.compact(_values).flat()
-      if (values.length > 0) {
-        result.push(...values);
+        results.push(...endpoints);
+      } catch (error) {
+        console.error(`Error collecting from ${source}:`, error);
       }
     }
 
-    await Promise.all(pages.map(page => page.close()));
+    // Remove duplicates based on URL
+    const uniqueEndpoints = results.filter((endpoint, index, self) =>
+      index === self.findIndex((e) => e.url === endpoint.url)
+    );
 
-    return utils.unique(result, (ele) => ele.chainId + ele.url);
+    return uniqueEndpoints;
   }
 }

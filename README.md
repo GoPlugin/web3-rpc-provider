@@ -68,6 +68,7 @@ $ cd web3-rpc-provider
 $ pnpm install
 
 # Start the project
+$ nvm use 18.17.0
 $ npm run start
 ```
 

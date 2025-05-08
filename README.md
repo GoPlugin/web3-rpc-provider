@@ -69,7 +69,7 @@ $ pnpm install
 
 # Start the project
 $ nvm use 18.17.0
-$ npm run start
+$ npm run dev
 ```
 
 ## :busts_in_silhouette: Contribute
